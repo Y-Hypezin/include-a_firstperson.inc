@@ -3,7 +3,7 @@
 
 // (C) Copyright by zHypezinXzL(R)
 
-// @include      : a_first_cam
+// @include      : a_first_person
 // @version      : ( 1 )
 // @infoV        : ( 1.8.4.1 ) : discriminator.define(s).function(s).codchange(s) - note: if the information from a new update is repeated in this version, discriminator(version) ++
 // @github       : https://github.com/zHypezinXzL
@@ -21,13 +21,13 @@
 
 
 // custom include-guard to ensure we don't duplicate
-#if (defined _INC_a_first_cam)
+#if (defined _INC_a_first_person)
     // for because it is already defined in another environment
     #endinput 
 #endif
 
 // define the include (indentifier)
-#define _INC_a_first_cam
+#define _INC_a_first_person
 
 // Port to open.mp and loads default variables as INVALID_PLAYER_TEXT_DRAW. (If they are using samp-stdlib)
 #tryinclude <open.mp>
@@ -151,13 +151,13 @@ public OnGameModeInit (
 
 ) {
     print ("                                                                                   ");
-    print (" Loading include: a_first_cam.inc                                                  ");
+    print (" Loading include: a_first_person.inc                                               ");
     print ("                                                                                   ");
     print ("- - - - - - - - - - :                                                              ");
     print ("                                                                                   ");
     print ("   (C) Copyright by zHypezinXzL (R)                                                ");
     print ("                                                                                   ");
-    print ("    @include      : a_first_cam                                                    ");
+    print ("    @include      : a_first_person                                                 ");
     print ("    @version      : ( 1 )                                                          ");
     print ("    @infoV        : ( 1.8.4.1 )                                                    ");
     print ("    @date         : 29th feb. 2024                                                 ");
@@ -169,7 +169,7 @@ public OnGameModeInit (
     print ("                                                                                   ");
     print ("- - - - - - - - - - :                                                              ");
     print ("                                                                                   ");
-    print (" >> a_first_cam included v.1 (1.8.4.1)                                             ");
+    print (" >> a_first_person included v.1 (1.8.4.1)                                          ");
     print (" Loaded.                                                                           ");
     print ("                                                                                   ");
 
