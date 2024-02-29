@@ -123,8 +123,7 @@ stock SetCameraFirstPerson (
 	DestroyObject (_obj_cam [playerid]);
 	_obj_cam [playerid] = CreateObject (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
-	// local cam
-	AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, 0.3, 0.75, 0.0, 0.0, 0.0);
+	AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_FOOT_TYPE], _cam_positions [FC_FOOT_TYPE + 5], 0.0, 0.0, 0.0);
  	AttachCameraToObject (playerid, _obj_cam [playerid]);
 	return 
 		1
