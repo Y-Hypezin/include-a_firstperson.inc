@@ -5,7 +5,7 @@
 
 // @include      : a_first_person
 // @version      : ( 1 )
-// @infoV        : ( 1.8.4.1 ) : discriminator.define(s).function(s).codchange(s) - note: if the information from a new update is repeated in this version, discriminator(version) ++
+// @infoV        : ( 1.10.4.3.1 ) : discriminator.define(s).function(s).improvedcodes.codchange(s) - note: if the information from a new update is repeated in this version, discriminator(version) ++
 // @github       : https://github.com/zHypezinXzL
 // @date         : 29th feb. 2024
 
@@ -43,13 +43,23 @@
 /// functions
 
 /// native SetFirstPersonCamPosition (Float: position, type = FC_FOOT_TYPE, mode = FC_FRONT_MODE);
-/// native SetCameraFirstPerson (playerid, bool: use_in_veh = false);
+/// native SetCameraFirstPerson (playerid, bool: use_in_veh = true);
 /// native CancelCameraFirstPerson (playerid);
 /// native IsPlayerInFirstPerson (playerid);
 
 
 // - - - - - - - - : defines
 
+
+#define FC_CREATE_OBJ CreateObject
+#if (defined _streamer_included)
+	#define FC_CREATE_OBJ CreateDynamicObject
+#endif
+
+#define FC_DESTROY_OBJ DestroyObject
+#if (defined _streamer_included)
+	#define FC_DESTROY_OBJ DestroyDynamicObject
+#endif
 
 #if (!defined INC_FC_OBEJECT_CAM)
 	#define INC_FC_OBEJECT_CAM 19300
@@ -73,24 +83,30 @@ enum {
 
 
 static stock 
-	_obj_cam  [MAX_PLAYERS], // object
-	bool: _crouched_cam  [MAX_PLAYERS],
-	bool: _in_swimming  [MAX_PLAYERS],
+	#if (defined _streamer_included)
+		STREAMER_TAG_OBJECT: _obj_cam [MAX_PLAYERS],
+	#else
+		_obj_cam [MAX_PLAYERS],
+	#endif
+
+	bool: _crouched_cam [MAX_PLAYERS],
+	bool: _aim_cam [MAX_PLAYERS],
+	bool: _in_swimming [MAX_PLAYERS],
 	bool: _use_in_vehicle [MAX_PLAYERS],
 	Float: _cam_positions [10] = {
 		// FRONT
-		Float: 0.3, // FOOT - [ 0.3 ]
+		Float: 0.28, // FOOT - [ 0.25 ]
 		Float: 0.7, // SWIM - [ 0.7 ]
-		Float: 0.3, // CROUCH - [ 0.3 ]
-		Float: -0.2, // VEH - [ -0.2 ]
-		Float: -0.1, // AIM - [ -0.1 ]
+		Float: 0.4, // CROUCH - [ 0.3 ]
+		Float: 0.2, // VEH - [ -0.2 ]
+		Float: 0.5, // AIM - [ -0.1 ]
 
 		// HEIGHT
-		Float: 0.75, // FOOT - [ 0.75 ]
+		Float: 0.7, // FOOT - [ 0.7 ]
 		Float: 0.55, // SWIM - [ 0.55 ]
-		Float: 0.15, // CROUCH - [ 0.15 ]
-		Float: 0.55, // VEH - [ 0.55 ]
-		Float: 0.85 // AIM - [ 0.85 ]
+		Float: 0.07, // CROUCH - [ 0.15 ]
+		Float: 0.7, // VEH - [ 0.55 ]
+		Float: 0.52 // AIM - [ 0.85 ]
 	}
 ;
 
@@ -120,8 +136,8 @@ stock SetCameraFirstPerson (
 	_in_first_cam [playerid] = true;
 	_use_in_vehicle [playerid] = use_in_veh;
 
-	DestroyObject (_obj_cam [playerid]);
-	_obj_cam [playerid] = CreateObject (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+	FC_DESTROY_OBJ (_obj_cam [playerid]);
+	_obj_cam [playerid] = FC_CREATE_OBJ (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
 	AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_FOOT_TYPE], _cam_positions [FC_FOOT_TYPE + 5], 0.0, 0.0, 0.0);
  	AttachCameraToObject (playerid, _obj_cam [playerid]);
@@ -134,7 +150,7 @@ stock CancelCameraFirstPerson (
 	playerid
 ) {
 	_in_first_cam [playerid] = false;
-	DestroyObject (_obj_cam [playerid]);
+	FC_DESTROY_OBJ (_obj_cam [playerid]);
 	return 
 		1
 	;
@@ -158,7 +174,7 @@ public OnGameModeInit (
     print ("                                                                                   ");
     print ("    @include      : a_first_person                                                 ");
     print ("    @version      : ( 1 )                                                          ");
-    print ("    @infoV        : ( 1.8.4.1 )                                                    ");
+    print ("    @infoV        : ( 1.10.4.3.1 )                                                 ");
     print ("    @date         : 29th feb. 2024                                                 ");
     print ("                                                                                   ");
     print ("    @author       : zHypezinXzL                                                    ");
@@ -168,7 +184,7 @@ public OnGameModeInit (
     print ("                                                                                   ");
     print ("- - - - - - - - - - :                                                              ");
     print ("                                                                                   ");
-    print (" >> a_first_person included v.1 (1.8.4.1)                                          ");
+    print (" >> a_first_person included v.1 (1.10.4.3.1)                                       ");
     print (" Loaded.                                                                           ");
     print ("                                                                                   ");
 
@@ -189,7 +205,9 @@ public OnPlayerConnect (
 	playerid
 ) {
 	_in_first_cam [playerid] = false;
+	_use_in_vehicle [playerid] = false;
 	_crouched_cam [playerid] = false;
+	_aim_cam [playerid] = false;
 	_in_swimming [playerid] = false;
     #if (defined __OnPlayerConnect_a_fc)
         return 
@@ -209,26 +227,11 @@ public OnPlayerSpawn (
 ) {
 	if (IsPlayerInFirstPerson (playerid)) {
 
-		SetCameraFirstPerson (playerid);
-
-		//////////////////
-
-		new
-			Float: _pos [3]
-		;
-		GetVehicleVelocity (GetPlayerVehicleID (playerid), _pos [0], _pos [1], _pos [2]);
-		if (floatround (floatsqroot ((_pos [0] * _pos [0]) + (_pos [1] * _pos [1]) + (_pos [2] * _pos [2])) * 180.0) > 100.0 && IsPlayerInAnyVehicle (playerid)) {
-			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_VEH_TYPE], _cam_positions [FC_VEH_TYPE + 5], 0.0, 0.0, 0.0);
-			AttachCameraToObject (playerid, _obj_cam [playerid]);
-		}
-
-		//////////////////
-
 		new 
 			anim = GetPlayerAnimationIndex (playerid)
 		;
 		if (!(((anim >= 1160) && (anim <= 1163)) || (anim == 1167) || (anim == 1365) || (anim == 1643) || (anim == 1453) || (anim == 220))) {
-			SetCameraFirstPerson (playerid);
+			SetCameraFirstPerson (playerid, _use_in_vehicle [playerid]);
 		}
 
 		//////////////////
@@ -244,8 +247,8 @@ public OnPlayerSpawn (
 		;
 		GetAnimationName (GetPlayerAnimationIndex (playerid), _animlib [0], 32, _animlib [1], 32);
 		if (!(!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid)) && _in_swimming  [playerid]) {
-			SetCameraFirstPerson (playerid);
-			_in_swimming  [playerid] = false;
+			SetCameraFirstPerson (playerid, _use_in_vehicle [playerid]);
+			_in_swimming [playerid] = false;
 		}
 	}
     #if (defined __OnPlayerSpawn_a_fc)
@@ -267,11 +270,14 @@ public OnPlayerEnterVehicle (
 	ispassenger
 ) {
 	if (IsPlayerInFirstPerson (playerid) && _use_in_vehicle [playerid]) {
-		DestroyObject(_obj_cam [playerid]);
-		_obj_cam [playerid] = CreateObject (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-		SetCameraBehindPlayer (playerid);
+		FC_DESTROY_OBJ (_obj_cam [playerid]);
+		_obj_cam [playerid] = FC_CREATE_OBJ (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+		//SetCameraBehindPlayer (playerid);
 		AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_VEH_TYPE], _cam_positions [FC_VEH_TYPE + 5], 0.0, 0.0, 0.0);
 		AttachCameraToObject (playerid, _obj_cam [playerid]);
+	} else if (IsPlayerInFirstPerson (playerid)) {
+		FC_DESTROY_OBJ (_obj_cam [playerid]);
+		SetCameraBehindPlayer (playerid);
 	}
 	#if (defined __OnPlayerEnterVehicle_a_fc)
         return 
@@ -293,7 +299,7 @@ public OnPlayerExitVehicle (
 	vehicleid
 ) {
 	if (IsPlayerInFirstPerson (playerid)) {
-		SetCameraFirstPerson(playerid);
+		SetCameraFirstPerson(playerid, _use_in_vehicle [playerid]);
 	}
 	#if (defined __OnPlayerExitVehicle_a_fc)
         return 
@@ -320,15 +326,10 @@ public OnPlayerKeyStateChange (
 			_animlib [2] [32] = {0, ...}
 		;
 		GetAnimationName (GetPlayerAnimationIndex (playerid), _animlib [0], 32, _animlib [1], 32);
-		/*if ((newkeys & (KEY_LEFT | KEY_RIGHT)) && IsPlayerInAnyVehicle (playerid)) {
-			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_VEH_TYPE], _cam_positions [FC_VEH_TYPE + 5], 0.0, 0.0, 0.0);
-			AttachCameraToObject (playerid, _obj_cam [playerid]);
-		} else if ((newkeys & (KEY_UP | KEY_DOWN)) && IsPlayerInAnyVehicle (playerid)) {
-			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_VEH_TYPE], _cam_positions [FC_VEH_TYPE + 5], 0.0, 0.0, 0.0);
-			AttachCameraToObject (playerid, _obj_cam [playerid]);
-		} else*/ 
-		if ((((newkeys & (KEY_HANDBRAKE | KEY_FIRE)) != (KEY_HANDBRAKE | KEY_FIRE)) && ((oldkeys & (KEY_HANDBRAKE | KEY_FIRE)) == (KEY_HANDBRAKE | KEY_FIRE)))) {
-			AttachCameraToObject (playerid, _obj_cam [playerid]);
+		if ((newkeys & (KEY_HANDBRAKE | KEY_FIRE)) && strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid)) {
+			_aim_cam [playerid] = true;
+			AttachObjectToPlayer(_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_AIM_TYPE], _cam_positions [FC_AIM_TYPE + 5], 0.0, 0.0, 0.0);
+			AttachCameraToObject(playerid, _obj_cam [playerid]); 
 		} else if ((newkeys & (KEY_SPRINT)) && (!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid))) {
 			_in_swimming [playerid] = true;
 			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_SWIM_TYPE], _cam_positions [FC_SWIM_TYPE + 5], 0.0, 0.0, 0.0);
@@ -339,10 +340,10 @@ public OnPlayerKeyStateChange (
 			AttachCameraToObject (playerid, _obj_cam [playerid]);
 		} else if((((newkeys & (KEY_SPRINT)) != (KEY_SPRINT)) && ((oldkeys & (KEY_SPRINT)) == (KEY_SPRINT))) && (!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid))) {
 			_in_swimming [playerid] = false;
-			SetCameraFirstPerson (playerid);
+			SetCameraFirstPerson (playerid, _use_in_vehicle [playerid]);
 		} else if((((newkeys & (KEY_UP)) != (KEY_UP)) && ((oldkeys & (KEY_UP)) == (KEY_UP))) && (!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid))) {
 			_in_swimming [playerid] = false;
-			SetCameraFirstPerson (playerid);
+			SetCameraFirstPerson (playerid, _use_in_vehicle [playerid]);
 		}
 	}
 	#if (defined __OnPlayerKeyStateChange_a_fc)
@@ -368,20 +369,30 @@ public OnPlayerUpdate (
 			anim = GetPlayerAnimationIndex (playerid)
 		;
 		AttachCameraToObject (playerid, _obj_cam [playerid]);
-		if (GetPlayerSpecialAction (playerid) != SPECIAL_ACTION_DUCK && _crouched_cam [playerid]) {
+		if ((((anim >= 1160) && (anim <= 1163)) || (anim == 1167) || (anim == 1365) || (anim == 1643) || (anim == 1453) || (anim == 220)) && GetPlayerSpecialAction (playerid) != SPECIAL_ACTION_DUCK) {
+			AttachObjectToPlayer(_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_AIM_TYPE], _cam_positions [FC_AIM_TYPE + 5], 0.0, 0.0, 0.0);
+			AttachCameraToObject(playerid, _obj_cam [playerid]); 
+		} else if (GetPlayerCameraMode (playerid) != 46 && _aim_cam [playerid]) {
+			_aim_cam [playerid] = false;
+			if (!_crouched_cam [playerid]) {
+				SetCameraFirstPerson (playerid, _use_in_vehicle [playerid]);
+			} else {
+				FC_DESTROY_OBJ (_obj_cam [playerid]);
+				_obj_cam [playerid] = FC_CREATE_OBJ (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+				AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_CROUCH_TYPE], _cam_positions [FC_CROUCH_TYPE + 5], 0.0, 0.0, 0.0);
+				AttachCameraToObject (playerid, _obj_cam [playerid]);
+			}
+		} else if (GetPlayerSpecialAction (playerid) != SPECIAL_ACTION_DUCK && _crouched_cam [playerid]) {
 			_crouched_cam [playerid] = false;
-			SetCameraFirstPerson(playerid);
-			AttachCameraToObject (playerid, _obj_cam [playerid]);
+			SetCameraFirstPerson (playerid, _use_in_vehicle [playerid]);
+			//AttachCameraToObject (playerid, _obj_cam [playerid]);
 		} else if (GetPlayerSpecialAction (playerid) == SPECIAL_ACTION_DUCK && !_crouched_cam [playerid]) {
-			DestroyObject (_obj_cam [playerid]);
-			_obj_cam [playerid] = CreateObject (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+			FC_DESTROY_OBJ (_obj_cam [playerid]);
+			_obj_cam [playerid] = FC_CREATE_OBJ (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_CROUCH_TYPE], _cam_positions [FC_CROUCH_TYPE + 5], 0.0, 0.0, 0.0);
 			AttachCameraToObject (playerid, _obj_cam [playerid]);
 			_crouched_cam [playerid] = true;
-		} else if ((((anim >= 1160) && (anim <= 1163)) || (anim == 1167) || (anim == 1365) || (anim == 1643) || (anim == 1453) || (anim == 220)) && GetPlayerSpecialAction (playerid) != SPECIAL_ACTION_DUCK) {
-			AttachObjectToPlayer(_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_AIM_TYPE], _cam_positions [FC_AIM_TYPE + 5], 0.0, 0.0, 0.0);
-			AttachCameraToObject(playerid, _obj_cam [playerid]);
-		}
+		} 
 	}
     #if (defined __OnPlayerUpdate_a_fc)
         return 
