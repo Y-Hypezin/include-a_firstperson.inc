@@ -243,7 +243,7 @@ public OnPlayerSpawn (
 			_animlib [2] [32] = {0, ...}
 		;
 		GetAnimationName (GetPlayerAnimationIndex (playerid), _animlib [0], 32, _animlib [1], 32);
-		if (!(!strcmp (_animlib [0], "_in_swimming ") && !IsPlayerInAnyVehicle (playerid)) && _in_swimming  [playerid]) {
+		if (!(!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid)) && _in_swimming  [playerid]) {
 			SetCameraFirstPerson (playerid);
 			_in_swimming  [playerid] = false;
 		}
@@ -327,28 +327,22 @@ public OnPlayerKeyStateChange (
 			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_VEH_TYPE], _cam_positions [FC_VEH_TYPE + 5], 0.0, 0.0, 0.0);
 			AttachCameraToObject (playerid, _obj_cam [playerid]);
 		} else*/ 
-		if ((newkeys & (KEY_HANDBRAKE | KEY_FIRE))) {
-			if (!IsPlayerInAnyVehicle (playerid)) {
-				if (GetPlayerCameraMode (playerid) == 46) {
-					AttachCameraToObject (playerid, _obj_cam [playerid]);
-				}
-			}
-		} else if ((newkeys & (KEY_SPRINT)) && (!strcmp (_animlib [0], "_in_swimming ") && !IsPlayerInAnyVehicle (playerid))) {
+		if ((((newkeys & (KEY_HANDBRAKE | KEY_FIRE)) != (KEY_HANDBRAKE | KEY_FIRE)) && ((oldkeys & (KEY_HANDBRAKE | KEY_FIRE)) == (KEY_HANDBRAKE | KEY_FIRE)))) {
+			AttachCameraToObject (playerid, _obj_cam [playerid]);
+		} else if ((newkeys & (KEY_SPRINT)) && (!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid))) {
 			_in_swimming [playerid] = true;
 			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_SWIM_TYPE], _cam_positions [FC_SWIM_TYPE + 5], 0.0, 0.0, 0.0);
 			AttachCameraToObject (playerid, _obj_cam [playerid]);
-		} else if ((newkeys & (KEY_UP)) && (!strcmp (_animlib [0], "_in_swimming ") && !IsPlayerInAnyVehicle (playerid))) {
+		} else if ((newkeys & (KEY_UP)) && (!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid))) {
 			_in_swimming [playerid] = true;
 			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_SWIM_TYPE], _cam_positions [FC_SWIM_TYPE + 5], 0.0, 0.0, 0.0);
 			AttachCameraToObject (playerid, _obj_cam [playerid]);
-		} else if((((newkeys & (KEY_SPRINT)) != (KEY_SPRINT)) && ((oldkeys & (KEY_SPRINT)) == (KEY_SPRINT))) && (!strcmp (_animlib [0], "_in_swimming ") && !IsPlayerInAnyVehicle (playerid)))
-		{
+		} else if((((newkeys & (KEY_SPRINT)) != (KEY_SPRINT)) && ((oldkeys & (KEY_SPRINT)) == (KEY_SPRINT))) && (!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid))) {
 			_in_swimming [playerid] = false;
-			SetCameraFirstPerson(playerid);
-		} else if((((newkeys & (KEY_UP)) != (KEY_UP)) && ((oldkeys & (KEY_UP)) == (KEY_UP))) && (!strcmp (_animlib [0], "_in_swimming ") && !IsPlayerInAnyVehicle (playerid)))
-		{
+			SetCameraFirstPerson (playerid);
+		} else if((((newkeys & (KEY_UP)) != (KEY_UP)) && ((oldkeys & (KEY_UP)) == (KEY_UP))) && (!strcmp (_animlib [0], "SWIM") && !IsPlayerInAnyVehicle (playerid))) {
 			_in_swimming [playerid] = false;
-			SetCameraFirstPerson(playerid);
+			SetCameraFirstPerson (playerid);
 		}
 	}
 	#if (defined __OnPlayerKeyStateChange_a_fc)
@@ -381,15 +375,10 @@ public OnPlayerUpdate (
 		} else if (GetPlayerSpecialAction (playerid) == SPECIAL_ACTION_DUCK && !_crouched_cam [playerid]) {
 			DestroyObject (_obj_cam [playerid]);
 			_obj_cam [playerid] = CreateObject (INC_FC_OBEJECT_CAM, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-
 			AttachObjectToPlayer (_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_CROUCH_TYPE], _cam_positions [FC_CROUCH_TYPE + 5], 0.0, 0.0, 0.0);
 			AttachCameraToObject (playerid, _obj_cam [playerid]);
 			_crouched_cam [playerid] = true;
 		} else if ((((anim >= 1160) && (anim <= 1163)) || (anim == 1167) || (anim == 1365) || (anim == 1643) || (anim == 1453) || (anim == 220)) && GetPlayerSpecialAction (playerid) != SPECIAL_ACTION_DUCK) {
-			new Float:X, Float:Y, Float:Z;
-			GetPlayerPos(playerid, X, Y, Z);
-			SetPlayerCameraPos(playerid, X, Y, Z);
-
 			AttachObjectToPlayer(_obj_cam [playerid], playerid, 0.0, _cam_positions [FC_AIM_TYPE], _cam_positions [FC_AIM_TYPE + 5], 0.0, 0.0, 0.0);
 			AttachCameraToObject(playerid, _obj_cam [playerid]);
 		}
