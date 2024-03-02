@@ -35,7 +35,7 @@
     #tryinclude <a_samp>
 #endif
 
-//#tryinclude <streamer>
+#tryinclude <streamer>
 
 // - - - - - - - - : natives
 
