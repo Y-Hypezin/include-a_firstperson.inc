@@ -18,9 +18,3 @@
 
 -----------------------------------
 
-[img]https://i.imgur.com/ppN5LOG.png[/img]
-[img]https://i.imgur.com/mMosdra.png[/img]
-[img]https://i.imgur.com/BhK4Ntt.png[/img]
-[img]https://i.imgur.com/28AfvbX.png[/img]
-
--------------------------------------------------
