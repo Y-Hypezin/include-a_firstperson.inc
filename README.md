@@ -8,6 +8,8 @@
 
 **This inclusion allows the player's camera to be in first person**
 
+# for "SAMP" servers it only works on "0.3"
+
 **Functions provided**
 -----------------------------------
 
