@@ -1,4 +1,4 @@
-# a_first_person include for San Andreas Multiplayer (SA:MP)
+# a_firstperson include for San Andreas Multiplayer (SA:MP)
 
 | file name | Latest release | Version | WIKI |
 | :---: | :---: | :---: | :---: |
