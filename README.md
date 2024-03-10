@@ -2,7 +2,7 @@
 
 | file name | Latest release | Version | WIKI |
 | :---: | :---: | :---: | :---: |
-| a_firstperson | [check](https://github.com/Y-Hypezin/include-a_firstperson.inc/releases/tag/a_firstperson-v3.8.5.1) | v3.8.5.1 | [wiki](https://github.com/Y-Hypezin/include-a_firstperson.inc/wiki) |
+| a_firstperson | [check](https://github.com/Y-Hypezin/include-a_firstperson.inc/releases/tag/a_first_person-v2.8.5.5.1) | v3.8.5.1 | [wiki](https://github.com/Y-Hypezin/include-a_firstperson.inc/wiki) |
 
 -------------------------------------------------
 
